@@ -1,0 +1,21 @@
+﻿@model TaskOne.Models.Assignments
+
+@if (ViewBag.ResultMessage != null)
+{
+    <div class="alert alert-success">@ViewBag.ResultMessage</div>
+}
+<form method="post" enctype="multipart/form-data" asp-action="UploadAssignment" asp-controller="Assignment">
+    <div class="form-group">
+        <label asp-for="AssignmentTitle"></label>
+        <input asp-for="AssignmentTitle" class="form-control" />
+        <span asp-validation-for="AssignmentTitle" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Files"></label>
+        <input asp-for="Files" type="file" multiple class="form-control" />
+        <span asp-validation-for="Files" class="text-danger"></span>
+    </div>
+    <br />
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
