@@ -13,25 +13,29 @@ namespace TaskOne.Models
             MaxSizeInBytes = maxSizeInBytes;
         }
 
-        protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
         {
-            var files = value as List<IFormFile>;
-
-            foreach (var file in files)
+            if (value is List<IFormFile> files)
             {
-
-                if (file.Length > MaxSizeInBytes)
+                if (files.Count > 5)
                 {
-                    return new ValidationResult($"File size exceeds the maximum allowed size of {MaxSizeInBytes / 1024} KB.");
+                    return new ValidationResult($"Maximum 5 Files are Allowed to Attach.");
                 }
-
-                var fileExtension = Path.GetExtension(file.FileName);
-                if (!AllowedExtensions.Contains(fileExtension.ToLower()))
+                foreach (var file in files)
                 {
-                    return new ValidationResult($"Only {string.Join(", ", AllowedExtensions)} files are allowed.");
+
+                    if (file.Length > MaxSizeInBytes)
+                    {
+                        return new ValidationResult($"File size exceeds the maximum allowed size of {MaxSizeInBytes / 1024} KB.");
+                    }
+
+                    var fileExtension = Path.GetExtension(file.FileName);
+                    if (!AllowedExtensions.Contains(fileExtension.ToLower()))
+                    {
+                        return new ValidationResult($"Only {string.Join(", ", AllowedExtensions)} files are allowed.");
+                    }
                 }
             }
-
             return ValidationResult.Success;
         }
     }

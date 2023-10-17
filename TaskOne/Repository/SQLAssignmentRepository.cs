@@ -43,7 +43,7 @@ namespace TaskOne.Repository
 
         public List<FilePath> GetFilesbyAssignmentId(int id)
         {
-            var filepaths = dbContext.FilePaths.Where(x=>x.AssignmentId==id).ToList();
+            var filepaths = dbContext.FilePaths.Include(u=>u.Assignment).Where(x=>x.AssignmentId==id).ToList();
             return filepaths;
         }
     }

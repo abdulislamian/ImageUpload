@@ -19,15 +19,30 @@
                         <th>
                             Assignment Id
                         </th>
-                        <th>File Link</th>
+                        <th>Assignment Id</th>
+                        <th>View File</th>
+                        <th>Download File</th>
                     </tr>
                     @foreach (var item in Model)
                     {
                         <tr>
                             <td>
-                                @item.Id
+                                @item.AssignmentId
                             </td>
-                            <td>@item.Path</td>
+                           <td>
+                                @item.Assignment.AssignmentTitle
+                           </td>
+                           <td>
+                                @{
+                                    string fullUrl = item.Path;
+                                    string[] urlParts = fullUrl.Split(new[] { "\\img\\" }, StringSplitOptions.None);
+                                    string fileName = urlParts.Length > 1 ? urlParts[1] : "";
+                                }
+                                <a href="@item.Path" target="_blank">View File</a>
+                           </td> 
+                           <td>
+                                <a href="@Url.Action("DownloadFile", "Assignment", new { FilePath = item.Path })">Download File</a>
+                           </td>
                         </tr>
                     }
                 </table>

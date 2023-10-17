@@ -37,69 +37,66 @@ namespace TaskOne.Controllers
         [HttpPost]
         public IActionResult UploadAssignment(Assignments assignment)
         {
-            if (assignment != null)
+            if (ModelState.IsValid)
             {
-                if (assignment.Files != null && assignment.Files.Count > 0)
+                if (assignment != null)
                 {
-                    var pathitems = new List<FilePath>();
-                    var assignmentitems = new List<Assignments>();
-                    assignment.FilePaths = new List<string>();
-
-                    foreach (var file in assignment.Files)
+                    if (assignment.Files != null && assignment.Files.Count > 0)
                     {
-                        if (file.Length > 0)
+                        var pathitems = new List<FilePath>();
+                        var assignmentitems = new List<Assignments>();
+                        foreach (var file in assignment.Files)
                         {
-                            var fileName = file.FileName;
-                            var fileExtension = Path.GetExtension(fileName);
-
-                            var validationAttribute = new FileValidationAttribute(new string[] { ".jpg", ".jpeg", ".png", ".gif", ".pdf" }, 2 * 1024 * 1024);
-                            var validationResult = validationAttribute.GetValidationResult(assignment.Files, new ValidationContext(assignment));
-
-                            if (validationResult != ValidationResult.Success)
+                            if (file.Length > 0)
                             {
-                                ModelState.AddModelError("Files", validationResult.ErrorMessage);
-                                return View(assignment);
+                                // Saving to Folder and KeepRecord in Database
+                                var GuidId = Guid.NewGuid();
+                                var JMMFilePath = Path.Combine(Env.WebRootPath, "img", GuidId + Path.GetExtension(file.FileName));
+                                var pathtoSaveinDB = Path.Combine("\\" + "img", GuidId + Path.GetExtension(file.FileName));
+                                using (var stream = new FileStream(JMMFilePath, FileMode.Create))
+                                {
+                                    file.CopyTo(stream);
+                                }
+
+                                // Store the file path in the list
+                                assignmentitems.Add(new Assignments { AssignmentTitle = assignment.AssignmentTitle });
+                                pathitems.Add(new FilePath { Path = pathtoSaveinDB, AssignmentId = assignment.Id });
                             }
-
-
-                            // Saving to Folder and KeepRecord in Database
-                            var JMMFilePath = Path.Combine(Env.WebRootPath, "img", Guid.NewGuid() + Path.GetExtension(file.FileName));
-                            using (var stream = new FileStream(JMMFilePath, FileMode.Create))
-                            {
-                                file.CopyTo(stream);
-                            }
-
-                            // Store the file path in the list
-                            assignment.FilePaths.Add(JMMFilePath);
-                            //assignmentRepo.CreateAssignment(assignment);
-                            assignmentitems.Add(new Assignments { AssignmentTitle = assignment.AssignmentTitle});
-                            pathitems.Add(new FilePath { Path = JMMFilePath, AssignmentId = assignment.Id });
                         }
+                        //Save in Db
+                        var SavedAssignment = assignmentRepo.CreateAssignment(assignment);
+                        foreach (var filePath in pathitems)
+                        {
+                            filePath.AssignmentId = SavedAssignment.Id;
+                        }
+                        //Save Assignment Files Paths
+                        assignmentRepo.SaveFilePaths(pathitems);
+                        ViewBag.ResultMessage = "Files Added Successfully";
+                        ModelState.Clear();
+                        return View();
                     }
-                    //Save in Db
-                    var SavedAssignment = assignmentRepo.CreateAssignment(assignment);
-                    foreach (var filePath in pathitems)
-                    {
-                        filePath.AssignmentId = SavedAssignment.Id;
-                    }
-                    //Save Assignment Files Paths
-                    assignmentRepo.SaveFilePaths(pathitems);
-                    ViewBag.ResultMessage = "Files Added Successfully";
-                    ModelState.Clear();
-                    return View();
                 }
             }
-
             return View(assignment);
         }
         public IActionResult GetFiles(int id)
         {
             var filepaths = assignmentRepo.GetFilesbyAssignmentId(id);
-            if(filepaths.Count() > 0)
+            if (filepaths.Count() > 0)
             {
                 return View(filepaths);
             }
             return View();
+        }
+        [HttpGet]
+        public IActionResult DownloadFile(string FilePath)
+        {
+            string GetFileName = Path.GetFileName(FilePath);
+
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", GetFileName);
+            var mimeType = "application/octet-stream";
+
+            return File(System.IO.File.OpenRead(filePath), mimeType, GetFileName);
         }
     }
 }

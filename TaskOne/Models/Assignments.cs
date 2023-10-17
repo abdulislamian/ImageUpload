@@ -11,10 +11,9 @@ namespace TaskOne.Models
         [DisplayName("Assignment Name")]
         public string AssignmentTitle { get; set; }
 
-        //[FileValidation(new string[] { ".jpg", ".jpeg", ".png", ".gif" }, 5 * 1024 * 1024, ErrorMessage = "Invalid file.")]
         [NotMapped]
-        public List<IFormFile> Files { get; set; }
-        [NotMapped]
-        public List<string> FilePaths { get; set; }
+        [FileValidation(new string[] { ".jpg", ".jpeg", ".png", ".gif",".pdf" }, 5 * 1024 * 1024, ErrorMessage = "Invalid file.")]
+        [Required]
+        public List<IFormFile>? Files { get; set; }
     }
 }
